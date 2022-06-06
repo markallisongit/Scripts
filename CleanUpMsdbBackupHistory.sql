@@ -1,10 +1,10 @@
 USE [msdb]
 
 -- number of days of history to keep
-DECLARE @DaysToKeep INT = 6
+DECLARE @DaysToKeep INT = 60
 
 -- number of days to delete at a time
-DECLARE @chunk_days INT = 1
+DECLARE @chunk_days INT = 7
 
 DECLARE @ChunkDate DATETIME
 DECLARE @CleanupDate DATETIME
