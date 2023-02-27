@@ -1,0 +1,74 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUserName": {
+            "value": "superman"
+        },
+        "vmAutoShutdownTime": {
+            "value": "20:00"
+        },
+        "dailyRetentionDurationCount": {
+            "value": 7
+        },
+        "daysOfTheWeek": {
+            "value": [
+                "Sunday"
+            ]
+        },
+        "monthlyRetentionDurationCount": {
+            "value": 6
+        },
+        "networkSecurityGroupName": {
+            "value": "demo-test-nsg"
+        },
+        "patchSettings": {
+            "value": {
+                "patchMode": "AutomaticByPlatform"
+            }
+        },
+        "resourceGroup": {
+            "value": "azurevmdemo-test-rg"
+        },
+        "rsvName": {
+            "value": "demo-test-rsv"
+        },
+        "rsvSku": {
+            "value": "RS0"
+        },
+        "scheduleRunTimes": {
+            "value": [
+                "2022-04-19T23:00:00Z"
+            ]
+        },
+        "subnetAddressRange": {
+            "value": "10.10.10.0/26"
+        },
+        "subnetName": {
+            "value": "default"
+        },
+        "vnetAddressRange": {
+            "value": "10.10.10.0/24"
+        },
+        "vnetName": {
+            "value": "demo-test-vnet"
+        },
+        "tags": {
+            "value": {
+                "Owner": "mark@markallison.co.uk",
+                "Env": "test",
+                "Project": "Blue screen demo",
+                "Description": "Demo for fixing blue screen VM. See markallison.co.uk"
+            }
+        },
+        "vmSize": {
+            "value": "Standard_B2s"
+        },
+        "vmSku": {
+            "value": "2022-datacenter-g2"
+        },
+        "weeklyRetentionDurationCount": {
+            "value": 4
+        }
+    }
+}
