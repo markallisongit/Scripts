@@ -60,8 +60,8 @@ param vnet2SubnetName string
 @description('Address range for subnet in vnet2')
 param vnet2SubnetPrefix string
 
-
-var vmName = toLower(uniqueString(subscription().id, rg.id, location))
+// create a unique VM name to avoid DNS clashes
+var vmName = 'vm${toLower(uniqueString(subscription().id, rg.id, location))}'
 
 // allow my public IP
 var securityRules = [

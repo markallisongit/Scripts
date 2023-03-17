@@ -9,7 +9,7 @@ $params = (Get-Content -Path "./parameters/$($location).json" | ConvertFrom-Json
 
 # check deploying to correct subscription
 $sub = Get-AzContext
-if ($sub.Subscription.Name -ne "Marks HEE Private") {
+if ($sub.Subscription.Name -ne "Marks Private") {
     throw "$($sub.Subscription.Name) is the wrong subscription."
 }
 
@@ -17,12 +17,18 @@ if ($sub.Subscription.Name -ne "Marks HEE Private") {
 $vm = Get-AzVM -ResourceGroupName $params.resourceGroup.value
 
 
+
+
 # Nics can be created separate from a VM but not recommended
 # because they cannot be attached to a VM that has a NIC attached to a different Vnet
 # a nic can be created separately to attach to a VM but it must be in the same vnet or it won't attach
 
 # get the osdisk
-$osdisk = Get-AzDisk -ResourceGroupName $params.resourceGroup.value | ? {$_.Name -like "*osdisk*"}
+$osdisk = Get-AzDisk -ResourceGroupName $params.resourceGroup.value | ? {$_.Name -eq $vm.StorageProfile.OsDisk.Name }
+
+if (-not $osdisk) {
+    throw "Could not find OS Disk for $($vm.Name). Aborting move."
+}
 
 # delete the vm and nic
 $vmName = $vm.Name

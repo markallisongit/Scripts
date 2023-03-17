@@ -11,15 +11,12 @@ $ip = (Invoke-WebRequest -uri "http://ifconfig.me/ip").Content | ConvertTo-Secur
 
 # check deploying to correct subscription
 $sub = Get-AzContext
-if ($sub.Subscription.Name -ne "Marks HEE Private") {
+if ($sub.Subscription.Name -ne "Marks Private") {
     throw "$($sub.Subscription.Name) is the wrong subscription."
 }
 
-# load functions
-# . .\functions.ps1
-
 Write-Information "Deploying infra"
-New-AzDeployment -Name core.deploy.$(Get-Date -Format "yyyyMMdd.HHmmss") `
+New-AzDeployment -Name vm.deploy.$(Get-Date -Format "yyyyMMdd.HHmmss") `
     -Location $Location `
     -TemplateFile ./main.bicep `
     -TemplateParameterFile "./parameters/$Location.json" `
