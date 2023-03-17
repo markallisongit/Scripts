@@ -17,8 +17,11 @@
         "vmSize": {
             "value": "Standard_B2s"
         },
+        "vmVnet": {
+            "value": "vnet1-uksouth"
+        },
         "vmSubnetName": {
-            "value": "subnet1"
+            "value": "vm-subnet"
         },
         "vnet1AddressPrefix": {
             "value": "10.111.0.0/16"
@@ -27,7 +30,7 @@
             "value": "vnet1-uksouth"
         },
         "vnet1SubnetName": {
-            "value": "subnet1"
+            "value": "vm-subnet"
         },
         "vnet1SubnetPrefix": {
             "value": "10.111.0.0/24"
@@ -40,7 +43,7 @@
             "value": "vnet2-uksouth"
         },
         "vnet2SubnetName": {
-            "value": "name"
+            "value": "vm-subnet"
         },
         "vnet2SubnetPrefix": {
             "value": "10.112.0.0/24"

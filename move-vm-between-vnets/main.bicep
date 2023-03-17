@@ -30,6 +30,9 @@ param tags object
 @description('The size of the VM')
 param vmSize string
 
+@description('The Vnet to connect the VM to')
+param vmVnet string
+
 @description('The subnet to connect the VM to on deployment')
 param vmSubnetName string = vnet1SubnetName
 
@@ -132,11 +135,14 @@ module vm './modules/vm.bicep' = {
     tags: tags
     vmName: vmName
     vmSize: vmSize
-    vnetName: vnet1Name
+    vnetName: vmVnet
     vnetResourceGroup: resourceGroup
     pipSku: 'Basic'
   }
   scope: rg
+  dependsOn: [
+    vnet1
+  ]
 }
 
 output vmName string = vmName
