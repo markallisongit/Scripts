@@ -1,0 +1,60 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adminUserName": {
+            "value": "markadmin"
+        },
+        "resourceGroup": {
+            "value": "rg-uksouth-test"
+        },
+        "nsg1Name": {
+            "value": "vnet1-nsg"
+        },
+        "nsg2Name": {
+            "value": "vnet2-nsg"
+        },
+        "vmSize": {
+            "value": "Standard_B2s"
+        },
+        "vmVnet": {
+            "value": "vnet1"
+        },
+        "vmSubnetName": {
+            "value": "vm-subnet"
+        },
+        "vnet1AddressPrefix": {
+            "value": "10.111.0.0/16"
+        },
+        "vnet1Name": {
+            "value": "vnet1"
+        },
+        "vnet1SubnetName": {
+            "value": "vm-subnet"
+        },
+        "vnet1SubnetPrefix": {
+            "value": "10.111.0.0/24"
+        },
+
+        "vnet2AddressPrefix": {
+            "value": "10.112.0.0/16"
+        },
+        "vnet2Name": {
+            "value": "vnet2"
+        },
+        "vnet2SubnetName": {
+            "value": "vm-subnet"
+        },
+        "vnet2SubnetPrefix": {
+            "value": "10.112.0.0/24"
+        },
+        "tags": {
+            "value": {
+                "Owner": "Mark Allison",
+                "Project": "VM Move Test",
+                "Environment": "test",
+                "Description": "Testing out moving VMs between Vnets"
+            }
+        }
+    }
+}
