@@ -18,7 +18,7 @@
             "value": "Standard_B2s"
         },
         "vmVnet": {
-            "value": "vnet1-uksouth"
+            "value": "vnet1"
         },
         "vmSubnetName": {
             "value": "vm-subnet"
@@ -27,7 +27,7 @@
             "value": "10.111.0.0/16"
         },
         "vnet1Name": {
-            "value": "vnet1-uksouth"
+            "value": "vnet1"
         },
         "vnet1SubnetName": {
             "value": "vm-subnet"
@@ -40,7 +40,7 @@
             "value": "10.112.0.0/16"
         },
         "vnet2Name": {
-            "value": "vnet2-uksouth"
+            "value": "vnet2"
         },
         "vnet2SubnetName": {
             "value": "vm-subnet"
