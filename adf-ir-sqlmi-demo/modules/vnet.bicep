@@ -1,7 +1,3 @@
-@description('Ip address whitelisted to the public endpoint')
-@secure()
-param allowedIp string
-
 @description('The network location')
 param location string = resourceGroup().location
 
@@ -11,11 +7,17 @@ param sqlmiNetworkSecurityGroupName string
 @description('Name of the Managed Instance subnet route table')
 param sqlmiRouteTableName string
 
+@description('SQLMI subnet Security rules')
+param sqlmiSecurityRules array
+
 @description('MI subnet address IP range.')
 param sqlmiSubnetAddressRange string
 
 @description('vm Network security group name.')
 param vmNetworkSecurityGroupName string
+
+@description('VM subnet Security rules')
+param vmSecurityRules array
 
 @description('MI subnet address IP range.')
 param vmSubnetAddressRange string
@@ -37,43 +39,6 @@ var policySecurityRules = json(loadTextContent('../network-intent-policy-rules.j
 
 // load the network intent policy rules that were exported from ExportNetworkPolicy.ps1
 var policyRoutes = json(loadTextContent('../network-intent-policy-routes.json'))
-
-// allow my public IP
-var vmSecurityRules = [
-  {
-    name: 'let-me-in'
-    properties: {
-      priority: 1000
-      sourceAddressPrefix: allowedIp
-      protocol: 'Tcp'
-      destinationPortRanges: [
-        3389
-      ]
-      access: 'Allow'
-      direction: 'Inbound'
-      sourcePortRange: '*'
-      destinationAddressPrefix: '*'
-    }
-  }
-]
-
-var sqlmiSecurityRules = [
-  {
-    name: 'let-me-in'
-    properties: {
-      priority: 1000
-      sourceAddressPrefix: allowedIp
-      protocol: 'Tcp'
-      destinationPortRanges: [
-        3342
-      ]
-      access: 'Allow'
-      direction: 'Inbound'
-      sourcePortRange: '*'
-      destinationAddressPrefix: '*'
-    }
-  }
-]
 
 var nsgConfigs = [
   {

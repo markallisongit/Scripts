@@ -85,6 +85,46 @@ var kvName = 'kv${suffix}'
 // vm name
 var vmName = 'vm${suffix}'
 
+// allow my public IP
+var vmSecurityRules = [
+  {
+    name: 'let-me-in'
+    properties: {
+      priority: 1000
+      sourceAddressPrefix: allowedIp
+      protocol: 'Tcp'
+      destinationPortRanges: [
+        3389
+      ]
+      access: 'Allow'
+      direction: 'Inbound'
+      sourcePortRange: '*'
+      destinationAddressPrefix: '*'
+    }
+  }
+]
+
+var sqlmiSecurityRules = []
+/*
+[
+  {
+    name: 'let-me-in'
+    properties: {
+      priority: 1000
+      sourceAddressPrefix: allowedIp
+      protocol: 'Tcp'
+      destinationPortRanges: [
+        3342
+      ]
+      access: 'Allow'
+      direction: 'Inbound'
+      sourcePortRange: '*'
+      destinationAddressPrefix: '*'
+    }
+  }
+]
+*/
+
 // Storage Account Name for ADLS
 var storageAccountName = 'sa${suffix}'
 
@@ -128,9 +168,11 @@ module vnet './modules/vnet.bicep' = {
     location: rg.location
     sqlmiNetworkSecurityGroupName: sqlmiNetworkSecurityGroupName
     sqlmiRouteTableName: sqlmiRouteTableName
+    sqlmiSecurityRules: sqlmiSecurityRules
     sqlmiSubnetAddressRange: sqlmiSubnetAddressRange
     tags: tags
     vmNetworkSecurityGroupName: vmNetworkSecurityGroupName
+    vmSecurityRules: vmSecurityRules
     vmSubnetName: vmSubnetName
     vmSubnetAddressRange: vmSubnetAddressRange
     vnetAddressRange: vnetAddressRange
