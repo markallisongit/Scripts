@@ -1,0 +1,68 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "adfName": {
+            "value": "adf-uksouth-test"
+        },
+        "adminUserName": {
+            "value": "markadmin"
+        },
+        "resourceGroup": {
+            "value": "rg-uksouth-test-adfsqlmi"
+        },
+        "sqlmiCollation": {
+            "value": "Latin1_General_CI_AS"
+        },
+        "sqlmiLicenseType": {
+            "value": "LicenseIncluded"
+        },
+        "sqlmiNetworkSecurityGroupName": {
+            "value": "nsg-uksouth-test-sqlmi"
+        },
+        "sqlmiRouteTableName": {
+            "value": "rt-uksouth-test-sqlmi"
+        },
+        "sqlmiSkuName": {
+            "value": "GP_G8IM"
+        },
+        "sqlmiSubnetAddressRange": {
+            "value": "10.137.0.0/24"
+        },
+        "sqlmiVcores": {
+            "value": 4
+        },
+        "sqlmiBackupStorageRedundancy": {
+            "value": "Local"
+        },
+        "sqlmiStorageSizeInGB": {
+            "value": 32
+        },
+        "vmNetworkSecurityGroupName": {
+            "value": "nsg-uksouth-test-vm"
+        },
+        "vmSize": {
+            "value": "Standard_B2s"
+        },
+        "vnetName": {
+            "value": "vnet-uksouth-test-adfsqlmi"
+        },
+        "vmSubnetName": {
+            "value": "vm-subnet"
+        },
+        "vnetAddressRange": {
+            "value": "10.137.0.0/16"
+        },
+        "vmSubnetAddressRange": {
+            "value": "10.137.1.0/24"
+        },
+        "tags": {
+            "value": {
+                "Owner": "Mark Allison",
+                "Project": "ADF SQLMI IR Test",
+                "Env": "test",
+                "Description": "Testing out Integration Runtime infra"
+            }
+        }
+    }
+}

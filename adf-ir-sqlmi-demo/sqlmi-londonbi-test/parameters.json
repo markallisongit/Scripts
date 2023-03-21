@@ -1,0 +1,108 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "location": {
+            "value": "uksouth"
+        },
+        "managedInstanceName": {
+            "value": "sqlmi-uksouth-test1"
+        },
+        "skuName": {
+            "value": "GP_G8IM"
+        },
+        "skuEdition": {
+            "value": "GeneralPurpose"
+        },
+        "storageSizeInGB": {
+            "value": 32
+        },
+        "vCores": {
+            "value": 4
+        },
+        "licenseType": {
+            "value": "LicenseIncluded"
+        },
+        "hardwareFamily": {
+            "value": "Gen8IM"
+        },
+        "dnsZonePartner": {
+            "value": ""
+        },
+        "collation": {
+            "value": "Latin1_General_CI_AS"
+        },
+        "proxyOverride": {
+            "value": "Proxy"
+        },
+        "minimalTlsVersion": {
+            "value": "1.2"
+        },
+        "publicDataEndpointEnabled": {
+            "value": false
+        },
+        "timezoneId": {
+            "value": "UTC"
+        },
+        "nsgForPublicEndpoint": {
+            "value": "allowFromAzureCloudTo3342NSG"
+        },
+        "managedInstanceTags": {
+            "value": {
+                "Owner": "mark.allison",
+                "Description": "Testing out Private Endpoint Connections for London BI",
+                "Env": "test"
+            }
+        },
+        "requestedBackupStorageRedundancy": {
+            "value": "Local"
+        },
+        "zoneRedundant": {
+            "value": false
+        },
+        "deployInExistingSubnet": {
+            "value": false
+        },
+        "enableADS": {
+            "value": false
+        },
+        "enableVA": {
+            "value": false
+        },
+        "identity": {
+            "value": {
+                "type": "SystemAssigned"
+            }
+        },
+        "primaryUserAssignedIdentityId": {
+            "value": ""
+        },
+        "federatedClientId": {
+            "value": ""
+        },
+        "servicePrincipal": {
+            "value": {
+                "type": "None"
+            }
+        },
+        "maintenanceConfigurationId": {
+            "value": "/subscriptions/4542aede-6b95-4072-8667-d4613dd2cd22/providers/Microsoft.Maintenance/publicMaintenanceConfigurations/SQL_Default"
+        },
+        "administratorLogin": {
+            "value": "mark.allison"
+        },
+        "administratorLoginPassword": {
+            "value": null
+        },
+        "administrators": {
+            "value": {
+                "administratorType": "activeDirectory",
+                "login": "Mark.Allison@hee.nhs.uk",
+                "sid": "90f70519-d2eb-4214-9847-dd5819e6b1e8",
+                "tenantId": "ffa7912b-b097-4131-9c0f-d0e80755b2ab",
+                "azureADOnlyAuthentication": false,
+                "principalType": "User"
+            }
+        }
+    }
+}
