@@ -84,6 +84,10 @@ var suffix = toLower(uniqueString(subscription().id, rg.id))
 var kvName = 'kv${suffix}'
 // vm name
 var vmName = 'vm${suffix}'
+
+// Storage Account Name for ADLS
+var storageAccountName = 'sa${suffix}'
+
 // sqlmi name
 var sqlmiName = 'sqlmi${suffix}'
 var secrets = [
@@ -189,6 +193,22 @@ module adf './modules/adf.bicep' = {
   scope: rg
 }
 
+// ADLS
+module storageAcct './modules/storage.bicep' =  {
+  name: '${storageAccountName}.${deploymentNameSuffix}'
+  params: {
+    location: rg.location
+    name: storageAccountName
+    storageProperties: {
+      accessTier: 'Hot'
+      isHnsEnabled: true
+    }
+    tags: tags    
+  }
+  scope: rg
+}
+
 output vmName string = vmName
 output keyVaultName string = kvName
 output sqlmiName string = sqlmiName
+output storageAccountName string = storageAccountName

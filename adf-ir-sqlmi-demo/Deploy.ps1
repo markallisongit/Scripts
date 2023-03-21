@@ -169,7 +169,7 @@ $deployParams = @{
 
 if ($kv) {
     Write-Information "Found key vault $($kv.VaultName). Using existing secret."
-    $secret = Get-AzKeyVaultSecret -VaultName $kv.VaultName -Name $params.adminUserName.value -AsPlainText
+    $secret = Get-AzKeyVaultSecret -VaultName $kv.VaultName -Name $params.adminUserName.value
     if ($secret) {
         $deployParams.Add("adminPassword", $secret.SecretValue)
     }
