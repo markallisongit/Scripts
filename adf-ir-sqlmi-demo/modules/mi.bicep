@@ -47,6 +47,7 @@ resource vnet 'Microsoft.Network/virtualNetworks@2022-01-01' existing = {
   scope: resourceGroup(vnetResourceGroupName)
 }
 
+// create a SQLMI - can take three hours to create
 resource managedInstance 'Microsoft.Sql/managedInstances@2022-08-01-preview' = {
   name: sqlmiName
   location: location
@@ -73,3 +74,4 @@ resource managedInstance 'Microsoft.Sql/managedInstances@2022-08-01-preview' = {
     vnet
   ]  
 }
+

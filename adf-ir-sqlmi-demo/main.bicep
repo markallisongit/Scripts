@@ -15,6 +15,9 @@ param adminUserName string
 @secure()
 param allowedIp string
 
+@description('Test database name')
+param dbName string
+
 @description('Suffix to make deployment names unique')
 param deploymentNameSuffix string = utcNow()
 
@@ -164,7 +167,6 @@ module kv './modules/keyVault.bicep' =  {
 module vnet './modules/vnet.bicep' = {
   name: '${vnetName}.${deploymentNameSuffix}'
   params: {
-    allowedIp: allowedIp
     location: rg.location
     sqlmiNetworkSecurityGroupName: sqlmiNetworkSecurityGroupName
     sqlmiRouteTableName: sqlmiRouteTableName
@@ -222,6 +224,21 @@ module sqlmi './modules/mi.bicep' = {
     vnetResourceGroupName: resourceGroup
   }
   scope: rg
+}
+
+// create a test database
+module db 'modules/db.bicep' = {
+  name: '${dbName}.${deploymentNameSuffix}'
+  params: {
+    dbName: dbName
+    location: rg.location
+    sqlmi: sqlmiName
+    tags: tags
+  }
+  scope: rg
+  dependsOn: [
+    sqlmi
+  ]
 }
 
 module adf './modules/adf.bicep' = {

@@ -8,6 +8,9 @@
         "adminUserName": {
             "value": "markadmin"
         },
+        "dbName": {
+            "value": "MyTestDb"
+        },
         "resourceGroup": {
             "value": "rg-uksouth-test-adfsqlmi"
         },
