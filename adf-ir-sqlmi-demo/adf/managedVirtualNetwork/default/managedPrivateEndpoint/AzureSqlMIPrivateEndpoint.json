@@ -1,0 +1,10 @@
+{
+    "name": "AzureSqlMIPrivateEndpoint",
+    "properties": {
+        "privateLinkResourceId": "/subscriptions/4542aede-6b95-4072-8667-d4613dd2cd22/resourceGroups/rg-uksouth-test-adfsqlmi/providers/Microsoft.Sql/managedInstances/sqlmizjdpuv4kelve2",
+        "groupId": "managedInstance",
+        "fqdns": [
+            "sqlmizjdpuv4kelve2.4eec22a26b3b.database.windows.net"
+        ]
+    }
+}
