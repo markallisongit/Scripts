@@ -1,0 +1,10 @@
+{
+    "name": "AzureDataLakeStorage",
+    "properties": {
+        "privateLinkResourceId": "/subscriptions/4542aede-6b95-4072-8667-d4613dd2cd22/resourceGroups/rg-uksouth-test-adfsqlmi/providers/Microsoft.Storage/storageAccounts/sazjdpuv4kelve2",
+        "groupId": "dfs",
+        "fqdns": [
+            "sazjdpuv4kelve2.dfs.core.windows.net"
+        ]
+    }
+}

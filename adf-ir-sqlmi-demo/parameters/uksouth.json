@@ -45,7 +45,7 @@
             "value": "nsg-uksouth-test-vm"
         },
         "vmSize": {
-            "value": "Standard_B2s"
+            "value": "Standard_D4lds_v5"
         },
         "vnetName": {
             "value": "vnet-uksouth-test-adfsqlmi"
