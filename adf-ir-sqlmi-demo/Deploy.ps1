@@ -127,13 +127,13 @@ if (Get-AzResourceGroup | where { $_.ResourceGroupName -eq $ResourceGroup }) {
     else {
         Write-Information "VNet not found"
     }
+
+    Write-Information "Get secret from key vault if exists"
+    $kv = Get-AzKeyVault -ResourceGroupName $ResourceGroup
 }
 else {
     Write-Information "Resource Group $ResourceGroup not found"
 }
-
-Write-Information "Get secret from key vault if exists"
-$kv = Get-AzKeyVault -ResourceGroupName $ResourceGroup
 
 $myAccount = Get-AzADUser -UserPrincipalName $sub.Account
 

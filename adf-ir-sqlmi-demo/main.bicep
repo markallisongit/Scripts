@@ -205,7 +205,7 @@ module vm './modules/vm.bicep' = {
   ]
 }
 
-// create a SQLMI
+/* create a SQLMI
 module sqlmi './modules/mi.bicep' = {
   name: '${sqlmiName}.${deploymentNameSuffix}'
   params: {
@@ -240,7 +240,7 @@ module db 'modules/db.bicep' = {
     sqlmi
   ]
 }
-
+*/
 module adf './modules/adf.bicep' = {
   name: '${adfName}.${deploymentNameSuffix}'
   params: {
@@ -269,5 +269,5 @@ module storageAcct './modules/storage.bicep' =  {
 
 output vmName string = vmName
 output keyVaultName string = kvName
-output sqlmiName string = sqlmiName
+//output sqlmiName string = sqlmiName
 output storageAccountName string = storageAccountName
