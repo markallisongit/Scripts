@@ -1,15 +1,11 @@
 {
-    "name": "AzureDataLakeStorageSelfHosted",
-    "type": "Microsoft.DataFactory/factories/linkedservices",
-    "properties": {
-        "annotations": [],
-        "type": "AzureBlobFS",
-        "typeProperties": {
-            "url": "https://sazjdpuv4kelve2.dfs.core.windows.net/"
-        },
-        "connectVia": {
-            "referenceName": "SelfHostedIR",
-            "type": "IntegrationRuntimeReference"
-        }
-    }
+	"name": "AzureDataLakeStorageSelfHosted",
+	"type": "Microsoft.DataFactory/factories/linkedservices",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://sazjdpuv4kelve2.dfs.core.windows.net/"
+		}
+	}
 }
