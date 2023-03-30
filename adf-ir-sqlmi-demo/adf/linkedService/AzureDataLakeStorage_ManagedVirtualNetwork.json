@@ -1,0 +1,14 @@
+{
+	"name": "AzureDataLakeStorage_ManagedVirtualNetwork",
+	"properties": {
+		"annotations": [],
+		"type": "AzureBlobFS",
+		"typeProperties": {
+			"url": "https://sazjdpuv4kelve2.dfs.core.windows.net/"
+		},
+		"connectVia": {
+			"referenceName": "ManagedVnetIR",
+			"type": "IntegrationRuntimeReference"
+		}
+	}
+}
