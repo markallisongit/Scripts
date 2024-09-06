@@ -25,10 +25,6 @@ foreach ($Subfolder in $Subfolders) {
         $SubfolderPath,
         $DestinationSubfolder,
         "/e",
-        "/mov",
-        "/nfl",
-        "/njh",
-        "/ndl",
         "/r:5",
         "/w:5"
 )
