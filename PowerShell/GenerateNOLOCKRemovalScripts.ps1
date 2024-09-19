@@ -9,6 +9,10 @@ Generates two scripts:
 * One to remove the NOLOCK hints (deploy)
 * One to add them back again (revert)
 
+Generates a log file if a dependency check fails 
+and lists the objects that failed the check. These
+objects get skipped.
+
 .PARAMETER InstanceName
 The SQL Server instance where the database resides
 
@@ -36,10 +40,10 @@ Feel free to submit a PR :)
 #>
 [cmdletbinding()]
 param (
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$InstanceName,
 
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$DatabaseName,
 
     [string]$ScriptPath = $PSScriptRoot,
@@ -65,10 +69,12 @@ if (-not $module) {
         try {
             Install-Module -Name dbatools -Force -AllowClobber
             Write-Host "dbatools module successfully installed."
-        } catch {
+        }
+        catch {
             Throw "Failed to install the dbatools module. Please try installing it manually."
         }
-    } else {
+    }
+    else {
         # User chose not to install the module, throw an error
         Throw "dbatools module is required for this script. Please install it and try again."
     }
@@ -99,12 +105,14 @@ ORDER BY o.type
 if ($SqlCredential) {
     # Use SQL Authentication
     $conn = Connect-DbaInstance -SqlInstance $InstanceName -Database $DatabaseName -SqlCredential $SqlCredential -TrustServerCertificate
-} else {
+}
+else {
     # Use Windows Authentication
     $conn = Connect-DbaInstance -SqlInstance $InstanceName -Database $DatabaseName -TrustServerCertificate
 }
 
 # Get the object definitions we want to change
+Write-Host "Getting list of objects to scan"
 $objectsToScan = Invoke-DbaQuery -SqlInstance $conn -Query $query
 
 # Initialize arrays
@@ -112,6 +120,8 @@ $revertSql = @()
 $deploySql = @()
 $skipped = @()
 
+$objectCount = 0
+Write-host "Scanning objects"
 foreach ($object in $objectsToScan) {
     # dependency check, we only care about valid objects
     $dependencySql = @"
@@ -121,7 +131,7 @@ foreach ($object in $objectsToScan) {
     FROM sys.sql_expression_dependencies
     WHERE referencing_id = $($Object.ObjectId)
 "@
-    $objectsToCheck=@()
+    $objectsToCheck = @()
     # get a list of dependencies for this object
     $objectsToCheck = Invoke-DbaQuery -SqlInstance $conn -Query $dependencySql
     Write-Host "Checking dependencies for `"$($object.ObjectName)`""
@@ -136,6 +146,7 @@ foreach ($object in $objectsToScan) {
         }
     }
     if (-not ($failedCheck)) {
+        $objectCount++
         $revert = $object.ObjectDefinition `
             -replace 'CREATE\s+PROCEDURE', 'CREATE OR ALTER PROCEDURE' `
             -replace 'CREATE\s+VIEW', 'CREATE OR ALTER VIEW'
@@ -157,7 +168,7 @@ foreach ($object in $objectsToScan) {
         # Append the procedure definition and GO statement to the arrays
         $revertSql += "$revert`r`nGO`r`n"
         $deploySql += "$deploy`r`nGO`r`n"
-        }
+    }
 }
 
 # Convert arrays to strings
@@ -170,6 +181,14 @@ $revertFile = "$($ScriptPath)\$($InstanceName)-$($DatabaseName)-Revert-$($dateti
 $deployFile = "$($ScriptPath)\$($InstanceName)-$($DatabaseName)-Deploy-$($datetime).sql"
 $skippedFile = "$($ScriptPath)\$($InstanceName)-$($DatabaseName)-SkippedObjects-$($datetime).log"
 
-$revertSqlString | Out-File -FilePath $revertFile -Encoding UTF8
-$deploySqlString | Out-File -FilePath $deployFile -Encoding UTF8
-$skipped | Out-File -FilePath $skippedFile -Encoding UTF8
+if($objectCount -gt 0) {
+    $revertSqlString | Out-File -FilePath $revertFile -Encoding UTF8
+    $deploySqlString | Out-File -FilePath $deployFile -Encoding UTF8
+} else {
+    Write-Host "NOLOCK hints not found in any objects."
+}
+
+
+if($skipped.Length -gt 0) {
+    $skipped | Out-File -FilePath $skippedFile -Encoding UTF8
+}
