@@ -2,11 +2,16 @@
 .SYNOPSIS
 Generates scripts to remove NOLOCK hints
 Also included is a script to revert if it goes wrong for some reason
+A dependency check is done first, and skips objects that fail the check
 
 .DESCRIPTION
 Generates two scripts:
 * One to remove the NOLOCK hints (deploy)
 * One to add them back again (revert)
+
+Generates a log file if a dependency check fails 
+and lists the objects that failed the check. These
+objects get skipped.
 
 .PARAMETER InstanceName
 The SQL Server instance where the database resides
@@ -35,10 +40,10 @@ Feel free to submit a PR :)
 #>
 [cmdletbinding()]
 param (
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$InstanceName,
 
-    [Parameter(Mandatory=$true)]
+    [Parameter(Mandatory = $true)]
     [string]$DatabaseName,
 
     [string]$ScriptPath = $PSScriptRoot,
@@ -64,10 +69,12 @@ if (-not $module) {
         try {
             Install-Module -Name dbatools -Force -AllowClobber
             Write-Host "dbatools module successfully installed."
-        } catch {
+        }
+        catch {
             Throw "Failed to install the dbatools module. Please try installing it manually."
         }
-    } else {
+    }
+    else {
         # User chose not to install the module, throw an error
         Throw "dbatools module is required for this script. Please install it and try again."
     }
@@ -75,6 +82,7 @@ if (-not $module) {
 
 $query = @"
 SELECT 
+    m.object_id as ObjectId,
 	s.name AS SchemaName,
     o.name AS ObjectName,
     m.definition AS ObjectDefinition
@@ -97,41 +105,70 @@ ORDER BY o.type
 if ($SqlCredential) {
     # Use SQL Authentication
     $conn = Connect-DbaInstance -SqlInstance $InstanceName -Database $DatabaseName -SqlCredential $SqlCredential -TrustServerCertificate
-} else {
+}
+else {
     # Use Windows Authentication
     $conn = Connect-DbaInstance -SqlInstance $InstanceName -Database $DatabaseName -TrustServerCertificate
 }
 
 # Get the object definitions we want to change
+Write-Host "Getting list of objects to scan"
 $objectsToScan = Invoke-DbaQuery -SqlInstance $conn -Query $query
 
-# Initialize arrays to store the SQL statements
+# Initialize arrays
 $revertSql = @()
 $deploySql = @()
+$skipped = @()
 
+$objectCount = 0
+Write-host "Scanning objects"
 foreach ($object in $objectsToScan) {
-    $revert = $object.ObjectDefinition `
-        -replace 'CREATE\s+PROCEDURE', 'CREATE OR ALTER PROCEDURE' `
-        -replace 'CREATE\s+VIEW', 'CREATE OR ALTER VIEW'
-    
-    $deploy = $object.ObjectDefinition `
-        -replace 'CREATE\s+PROCEDURE', 'CREATE OR ALTER PROCEDURE' `
-        -replace 'CREATE\s+VIEW', 'CREATE OR ALTER VIEW' `
-        -replace 'WITH\s*\(\s*NOLOCK\s*\)', '' `
-        -replace 'WITH\s*\(\s*NOLOCK\s*\)', '' `
-        -replace 'WITH\s*\(\s*NOLOCK\s*\)', '' `
-        -replace '\(\s*NOLOCK\s*\)', '' `
-        -replace ',\s*NOLOCK', '' `
-        -replace 'NOLOCK\s*,', '' `
-        -replace '\bNOLOCK\b', '' `
-        -replace 'WITH\s*\(\s*\)', '' `
-        -replace '\(\s*,', '(' `
-        -replace ',\s*\)', ')' `
-        -replace '\(\s*\)', '()'
+    # dependency check, we only care about valid objects
+    $dependencySql = @"
+    SELECT
+        referenced_id,
+        referenced_entity_name
+    FROM sys.sql_expression_dependencies
+    WHERE referencing_id = $($Object.ObjectId)
+"@
+    $objectsToCheck = @()
+    # get a list of dependencies for this object
+    $objectsToCheck = Invoke-DbaQuery -SqlInstance $conn -Query $dependencySql
+    Write-Host "Checking dependencies for `"$($object.ObjectName)`""
+
+    # for each one, check they exist
+    $failedCheck = $false
+    foreach ($chkObject in $objectsToCheck) {
+        if ($chkObject.referenced_id -is [System.DBNull]) {
+            Write-Host "`t$($chkObject.referenced_entity_name) does not exist in $($object.ObjectName). Skipping.."
+            $failedCheck = $true
+            $skipped += "$($object.ObjectName). Missing reference: $($chkObject.referenced_entity_name)"
+        }
+    }
+    if (-not ($failedCheck)) {
+        $objectCount++
+        $revert = $object.ObjectDefinition `
+            -replace 'CREATE\s+PROCEDURE', 'CREATE OR ALTER PROCEDURE' `
+            -replace 'CREATE\s+VIEW', 'CREATE OR ALTER VIEW'
         
-    # Append the procedure definition and GO statement to the arrays
-    $revertSql += "$revert`r`nGO`r`n"
-    $deploySql += "$deploy`r`nGO`r`n"
+        $deploy = $object.ObjectDefinition `
+            -replace 'CREATE\s+PROCEDURE', 'CREATE OR ALTER PROCEDURE' `
+            -replace 'CREATE\s+VIEW', 'CREATE OR ALTER VIEW' `
+            -replace 'WITH\s*\(\s*NOLOCK\s*\)', '' `
+            -replace 'WITH\s*\(\s*NOLOCK\s*\)', '' `
+            -replace 'WITH\s*\(\s*NOLOCK\s*\)', '' `
+            -replace '\(\s*NOLOCK\s*\)', '' `
+            -replace ',\s*NOLOCK', '' `
+            -replace 'NOLOCK\s*,', '' `
+            -replace '\bNOLOCK\b', '' `
+            -replace 'WITH\s*\(\s*\)', '' `
+            -replace '\(\s*,', '(' `
+            -replace ',\s*\)', ')' `
+            -replace '\(\s*\)', '()'        
+        # Append the procedure definition and GO statement to the arrays
+        $revertSql += "$revert`r`nGO`r`n"
+        $deploySql += "$deploy`r`nGO`r`n"
+    }
 }
 
 # Convert arrays to strings
@@ -142,6 +179,16 @@ $deploySqlString = [string]::Join("`r`n", $deploySql)
 $datetime = Get-Date -Format "yyyyMMdd-HHmmss"
 $revertFile = "$($ScriptPath)\$($InstanceName)-$($DatabaseName)-Revert-$($datetime).sql"
 $deployFile = "$($ScriptPath)\$($InstanceName)-$($DatabaseName)-Deploy-$($datetime).sql"
+$skippedFile = "$($ScriptPath)\$($InstanceName)-$($DatabaseName)-SkippedObjects-$($datetime).log"
 
-$revertSqlString | Out-File -FilePath $revertFile -Encoding UTF8
-$deploySqlString | Out-File -FilePath $deployFile -Encoding UTF8
+if($objectCount -gt 0) {
+    $revertSqlString | Out-File -FilePath $revertFile -Encoding UTF8
+    $deploySqlString | Out-File -FilePath $deployFile -Encoding UTF8
+} else {
+    Write-Host "NOLOCK hints not found in any objects."
+}
+
+
+if($skipped.Length -gt 0) {
+    $skipped | Out-File -FilePath $skippedFile -Encoding UTF8
+}
