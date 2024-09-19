@@ -35,7 +35,7 @@ SELECT
     BackupSpeedMBPerSecond
 FROM 
     BackupDetails
-WHERE BackupDetails.DatabaseName = 'SLM'
+WHERE BackupDetails.DatabaseName = 'ProcureWizard'
 ORDER BY 
     BackupStartTime DESC;
 
@@ -72,7 +72,7 @@ SELECT
 FROM 
     BackupDetails
 WHERE 
-    DatabaseName = 'SLM'
+    DatabaseName = 'ProcureWizard'
 GROUP BY 
     DatabaseName, BackupType, BackupDate
 ORDER BY 

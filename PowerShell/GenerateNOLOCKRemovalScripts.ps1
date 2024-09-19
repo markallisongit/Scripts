@@ -2,6 +2,7 @@
 .SYNOPSIS
 Generates scripts to remove NOLOCK hints
 Also included is a script to revert if it goes wrong for some reason
+A dependency check is done first, and skips objects that fail the check
 
 .DESCRIPTION
 Generates two scripts:
@@ -75,6 +76,7 @@ if (-not $module) {
 
 $query = @"
 SELECT 
+    m.object_id as ObjectId,
 	s.name AS SchemaName,
     o.name AS ObjectName,
     m.definition AS ObjectDefinition
@@ -105,33 +107,57 @@ if ($SqlCredential) {
 # Get the object definitions we want to change
 $objectsToScan = Invoke-DbaQuery -SqlInstance $conn -Query $query
 
-# Initialize arrays to store the SQL statements
+# Initialize arrays
 $revertSql = @()
 $deploySql = @()
+$skipped = @()
 
 foreach ($object in $objectsToScan) {
-    $revert = $object.ObjectDefinition `
-        -replace 'CREATE\s+PROCEDURE', 'CREATE OR ALTER PROCEDURE' `
-        -replace 'CREATE\s+VIEW', 'CREATE OR ALTER VIEW'
-    
-    $deploy = $object.ObjectDefinition `
-        -replace 'CREATE\s+PROCEDURE', 'CREATE OR ALTER PROCEDURE' `
-        -replace 'CREATE\s+VIEW', 'CREATE OR ALTER VIEW' `
-        -replace 'WITH\s*\(\s*NOLOCK\s*\)', '' `
-        -replace 'WITH\s*\(\s*NOLOCK\s*\)', '' `
-        -replace 'WITH\s*\(\s*NOLOCK\s*\)', '' `
-        -replace '\(\s*NOLOCK\s*\)', '' `
-        -replace ',\s*NOLOCK', '' `
-        -replace 'NOLOCK\s*,', '' `
-        -replace '\bNOLOCK\b', '' `
-        -replace 'WITH\s*\(\s*\)', '' `
-        -replace '\(\s*,', '(' `
-        -replace ',\s*\)', ')' `
-        -replace '\(\s*\)', '()'
+    # dependency check, we only care about valid objects
+    $dependencySql = @"
+    SELECT
+        referenced_id,
+        referenced_entity_name
+    FROM sys.sql_expression_dependencies
+    WHERE referencing_id = $($Object.ObjectId)
+"@
+    $objectsToCheck=@()
+    # get a list of dependencies for this object
+    $objectsToCheck = Invoke-DbaQuery -SqlInstance $conn -Query $dependencySql
+    Write-Host "Checking dependencies for `"$($object.ObjectName)`""
+
+    # for each one, check they exist
+    $failedCheck = $false
+    foreach ($chkObject in $objectsToCheck) {
+        if ($chkObject.referenced_id -is [System.DBNull]) {
+            Write-Host "`t$($chkObject.referenced_entity_name) does not exist in $($object.ObjectName). Skipping.."
+            $failedCheck = $true
+            $skipped += "$($object.ObjectName). Missing reference: $($chkObject.referenced_entity_name)"
+        }
+    }
+    if (-not ($failedCheck)) {
+        $revert = $object.ObjectDefinition `
+            -replace 'CREATE\s+PROCEDURE', 'CREATE OR ALTER PROCEDURE' `
+            -replace 'CREATE\s+VIEW', 'CREATE OR ALTER VIEW'
         
-    # Append the procedure definition and GO statement to the arrays
-    $revertSql += "$revert`r`nGO`r`n"
-    $deploySql += "$deploy`r`nGO`r`n"
+        $deploy = $object.ObjectDefinition `
+            -replace 'CREATE\s+PROCEDURE', 'CREATE OR ALTER PROCEDURE' `
+            -replace 'CREATE\s+VIEW', 'CREATE OR ALTER VIEW' `
+            -replace 'WITH\s*\(\s*NOLOCK\s*\)', '' `
+            -replace 'WITH\s*\(\s*NOLOCK\s*\)', '' `
+            -replace 'WITH\s*\(\s*NOLOCK\s*\)', '' `
+            -replace '\(\s*NOLOCK\s*\)', '' `
+            -replace ',\s*NOLOCK', '' `
+            -replace 'NOLOCK\s*,', '' `
+            -replace '\bNOLOCK\b', '' `
+            -replace 'WITH\s*\(\s*\)', '' `
+            -replace '\(\s*,', '(' `
+            -replace ',\s*\)', ')' `
+            -replace '\(\s*\)', '()'        
+        # Append the procedure definition and GO statement to the arrays
+        $revertSql += "$revert`r`nGO`r`n"
+        $deploySql += "$deploy`r`nGO`r`n"
+        }
 }
 
 # Convert arrays to strings
@@ -142,6 +168,8 @@ $deploySqlString = [string]::Join("`r`n", $deploySql)
 $datetime = Get-Date -Format "yyyyMMdd-HHmmss"
 $revertFile = "$($ScriptPath)\$($InstanceName)-$($DatabaseName)-Revert-$($datetime).sql"
 $deployFile = "$($ScriptPath)\$($InstanceName)-$($DatabaseName)-Deploy-$($datetime).sql"
+$skippedFile = "$($ScriptPath)\$($InstanceName)-$($DatabaseName)-SkippedObjects-$($datetime).log"
 
 $revertSqlString | Out-File -FilePath $revertFile -Encoding UTF8
 $deploySqlString | Out-File -FilePath $deployFile -Encoding UTF8
+$skipped | Out-File -FilePath $skippedFile -Encoding UTF8
