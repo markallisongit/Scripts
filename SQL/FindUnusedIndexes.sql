@@ -1,4 +1,14 @@
--- finds unused indexes and generates drop and create scripts
+-- Query to get SQL Server last startup time
+SELECT sqlserver_start_time AS StatsFrom
+FROM sys.dm_os_sys_info;
+
+DECLARE @IsEnterpriseOrDeveloperEdition BIT = CASE 
+    WHEN CAST(SERVERPROPERTY('Edition') AS NVARCHAR(128)) LIKE '%Enterprise%' 
+        OR CAST(SERVERPROPERTY('Edition') AS NVARCHAR(128)) LIKE '%Developer%' 
+    THEN 1 
+    ELSE 0 
+END;
+
 SELECT 
     o.name AS ObjectName,
     i.name AS IndexName,
@@ -9,8 +19,12 @@ SELECT
     last_user_seek,
     last_user_scan,
     last_user_lookup,
+
+    -- Generate DROP INDEX script
     'IF EXISTS (SELECT * FROM sys.indexes AS idx JOIN sys.objects AS obj ON idx.object_id = obj.object_id WHERE obj.name = ''' + o.name + ''' AND idx.name = ''' + i.name + ''') ' +
     'DROP INDEX ' + QUOTENAME(i.name) + ' ON ' + QUOTENAME(SCHEMA_NAME(o.schema_id)) + '.' + QUOTENAME(o.name) AS DropIndexCommand,
+
+    -- Generate CREATE INDEX script
     'IF NOT EXISTS (SELECT * FROM sys.indexes AS idx JOIN sys.objects AS obj ON idx.object_id = obj.object_id WHERE obj.name = ''' + o.name + ''' AND idx.name = ''' + i.name + ''') ' +
 	'CREATE NONCLUSTERED INDEX ' + QUOTENAME(i.name) + ' ON ' + QUOTENAME(SCHEMA_NAME(o.schema_id)) + '.' + QUOTENAME(o.name) + 
     ' (' + STUFF((SELECT ', ' + c.name 
@@ -19,6 +33,8 @@ SELECT
         WHERE ic.object_id = i.object_id AND ic.index_id = i.index_id AND ic.is_included_column = 0
         ORDER BY ic.key_ordinal
         FOR XML PATH('')), 1, 2, '') + ')' +
+
+    -- Include columns if present
     CASE 
         WHEN EXISTS (SELECT 1 FROM sys.index_columns ic WHERE ic.object_id = i.object_id AND ic.index_id = i.index_id AND ic.is_included_column = 1)
         THEN ' INCLUDE (' + STUFF((SELECT ', ' + c.name 
@@ -28,7 +44,12 @@ SELECT
             FOR XML PATH('')), 1, 2, '') + ')'
         ELSE ''
     END +
-    ' WITH (ONLINE = ON);' AS RecreateIndexCommand
+
+    -- Add the WITH clause for options
+    ' WITH (SORT_IN_TEMPDB = ON' +
+    CASE WHEN @IsEnterpriseOrDeveloperEdition = 1 THEN ', ONLINE = ON' ELSE '' END +
+    ');' AS RecreateIndexCommand
+
 FROM 
     sys.dm_db_index_usage_stats AS s
 JOIN 
@@ -43,10 +64,5 @@ WHERE
 	AND s.last_user_seek IS NULL
 	AND s.last_user_scan IS NULL
 	AND s.last_user_lookup IS NULL
-ORDER BY 
-    ObjectName,
-    IndexName;
-
-
-
-
+ORDER BY
+	s.user_updates DESC;
