@@ -52,6 +52,3 @@ ORDER BY DatabaseName;
 
 -- Clean up
 DROP TABLE #dbSizes;
-
-
-DBCC SHRINKFILE ('ProcureWizard-Live_log', TRUNCATEONLY)
