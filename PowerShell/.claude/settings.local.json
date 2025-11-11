@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pwsh:*)",
+      "Bash(ffprobe:*)",
+      "Bash(mediainfo:*)",
+      "WebSearch"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

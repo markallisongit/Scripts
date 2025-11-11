@@ -1,3 +1,5 @@
+USE master
+GO
 WITH XMLNAMESPACES(DEFAULT '
 http://schemas.microsoft.com/sqlserver/2004/07/showplan')
 , plans as (

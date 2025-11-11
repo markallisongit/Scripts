@@ -2,8 +2,8 @@
 drop table if exists ##QueryStorePerf
 
 declare
-	@start_time datetimeoffset = (SELECT DATEADD (HOUR,-1,SYSDATETIMEOFFSET ()))
-	, @end_time datetimeoffset = (SELECT SYSDATETIMEOFFSET ())
+	@start_time datetimeoffset = '2024-12-13 09:00:00 +00:00'
+	, @end_time datetimeoffset = '2024-12-13 18:00:00 +00:00'
 
 if not exists (select 1 from tempdb.sys.tables where name = N'##QueryStorePerf')
 begin
@@ -124,8 +124,8 @@ begin
 	join sys.query_store_runtime_stats r on r.plan_id = p.plan_id
 	join sys.query_store_runtime_stats_interval i on i.runtime_stats_interval_id = r.runtime_stats_interval_id
 	left join sys.objects o on o.object_id = q.object_id
-	--where i.start_time >= @start_time
-	--and i.end_time <= @end_time
+	where i.start_time >= @start_time
+	and i.end_time <= @end_time
 	order by runtime_stats_id;
 end
 else
@@ -251,3 +251,55 @@ begin
 	and i.end_time <= @end_time
 	order by runtime_stats_id;
 end
+
+
+SELECT * FROM ##QueryStorePerf
+WHERE [OBJECT_NAME] = 'Customer_FindCtcIDs'
+
+
+-- Aggregating hourly performance for the stored procedure
+WITH HourlyStats AS (
+    SELECT
+        object_name,
+        DATEPART(HOUR, r.last_execution_time) AS ExecutionHour,
+        COUNT(r.runtime_stats_id) AS ExecutionCount,
+        SUM(r.avg_duration) AS TotalDuration,
+        AVG(r.avg_duration) AS AvgDuration,
+        MAX(r.max_duration) AS MaxDuration,
+        MIN(r.min_duration) AS MinDuration,
+        SUM(r.avg_cpu_time) AS TotalCPUTime,
+        AVG(r.avg_cpu_time) AS AvgCPUTime,
+        MAX(r.max_cpu_time) AS MaxCPUTime,
+        MIN(r.min_cpu_time) AS MinCPUTime,
+        SUM(r.avg_logical_io_reads) AS TotalLogicalReads,
+        AVG(r.avg_logical_io_reads) AS AvgLogicalReads,
+        SUM(r.avg_logical_io_writes) AS TotalLogicalWrites,
+        AVG(r.avg_logical_io_writes) AS AvgLogicalWrites
+    FROM
+        ##QueryStorePerf r
+    WHERE
+        object_name = 'Customer_FindCtcIDs' -- Filter for the specific stored procedure
+    GROUP BY
+        object_name,
+        DATEPART(HOUR, r.last_execution_time)
+)
+SELECT
+    object_name,
+    ExecutionHour,
+    ExecutionCount,
+    TotalDuration,
+    AvgDuration,
+    MaxDuration,
+    MinDuration,
+    TotalCPUTime,
+    AvgCPUTime,
+    MaxCPUTime,
+    MinCPUTime,
+    TotalLogicalReads,
+    AvgLogicalReads,
+    TotalLogicalWrites,
+    AvgLogicalWrites
+FROM
+    HourlyStats
+ORDER BY
+    ExecutionHour;
