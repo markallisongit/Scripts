@@ -14,8 +14,10 @@ SELECT
 FROM 
     sys.tables t
     INNER JOIN sys.dm_db_partition_stats ps ON t.object_id = ps.object_id
+    /*
 WHERE 
     SCHEMA_NAME(t.schema_id) = 'cdc'
+*/
 GROUP BY 
     t.schema_id, 
     t.name

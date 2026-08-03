@@ -4,7 +4,11 @@
       "Bash(pwsh:*)",
       "Bash(ffprobe:*)",
       "Bash(mediainfo:*)",
-      "WebSearch"
+      "WebSearch",
+      "Bash(ffmpeg -hide_banner -h encoder=prores_ks)",
+      "Bash(grep -iA3 \"Supported pixel formats\\\\|profile\")",
+      "Bash(ffmpeg -hide_banner -h decoder=hevc)",
+      "Bash(ffmpeg -hide_banner -hwaccels)"
     ],
     "deny": [],
     "ask": []

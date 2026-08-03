@@ -3,3 +3,4 @@ network-intent-policy-routes.json
 network-intent-policy-rules.json
 Test.sql
 PowerShell/*.json
+PowerShell/.claude/settings.local.json
